@@ -166,11 +166,11 @@ export class NewsPanel extends Panel {
         this.setCachedSummary(cacheKey, result.summary);
         this.showSummary(result.summary);
       } else {
-        this.summaryContainer.innerHTML = `<div class="panel-summary-error">${t('common.summaryFailed', 'Özet oluşturulamadı')}</div>`;
+        this.summaryContainer.innerHTML = `<div class="panel-summary-error">${t('common.summaryFailed', { defaultValue: 'Could not generate summary' })}</div>`;
         setTimeout(() => this.hideSummary(), 3000);
       }
     } catch {
-      this.summaryContainer.innerHTML = `<div class="panel-summary-error">${t('common.summaryError', 'Özet başarısız')}</div>`;
+      this.summaryContainer.innerHTML = `<div class="panel-summary-error">${t('common.summaryError', { defaultValue: 'Summary failed' })}</div>`;
       setTimeout(() => this.hideSummary(), 3000);
     } finally {
       this.isSummarizing = false;
