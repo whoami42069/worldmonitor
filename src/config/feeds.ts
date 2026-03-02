@@ -69,6 +69,13 @@ export const SOURCE_TIERS: Record<string, number> = {
   'OpenAI News': 3,
   // Portuguese
   'Brasil Paralelo': 2,
+  // Turkish
+  'Anadolu Ajansi': 1,
+  'NTV': 2,
+  'CNN Turk': 2,
+  'Sozcu': 2,
+  'Cumhuriyet': 2,
+  'Haberturk': 2,
 
   // Tier 1 - Official Government & International Orgs
   'White House': 1,
@@ -414,6 +421,7 @@ export const SOURCE_PROPAGANDA_RISK: Record<string, SourceRiskProfile> = {
   'Al Jazeera': { risk: 'medium', stateAffiliated: 'Qatar', note: 'Qatari state-funded, independent editorial' },
   'Al Arabiya': { risk: 'medium', stateAffiliated: 'Saudi Arabia', note: 'Saudi-owned, reflects Gulf perspective' },
   'TRT World': { risk: 'medium', stateAffiliated: 'Turkey', note: 'Turkish state broadcaster' },
+  'Anadolu Ajansi': { risk: 'medium', stateAffiliated: 'Turkey', note: 'Turkish state wire service, government-aligned' },
   'France 24': { risk: 'medium', stateAffiliated: 'France', note: 'French state-funded, editorially independent' },
   'EuroNews': { risk: 'low', note: 'European public broadcaster consortium', knownBiases: ['Pro-EU'] },
   'Le Monde': { risk: 'low', note: 'French newspaper of record' },
@@ -527,6 +535,12 @@ const FULL_FEEDS: Record<string, Feed[]> = {
     { name: 'BBC Turkce', url: rss('https://feeds.bbci.co.uk/turkce/rss.xml'), lang: 'tr' },
     { name: 'DW Turkish', url: rss('https://rss.dw.com/xml/rss-tur-all'), lang: 'tr' },
     { name: 'Hurriyet', url: rss('https://www.hurriyet.com.tr/rss/anasayfa'), lang: 'tr' },
+    { name: 'Anadolu Ajansi', url: rss('https://www.aa.com.tr/tr/rss/default?cat=guncel'), lang: 'tr' },
+    { name: 'NTV', url: rss('https://www.ntv.com.tr/son-dakika.rss'), lang: 'tr' },
+    { name: 'CNN Turk', url: rss('https://www.cnnturk.com/feed/rss/news'), lang: 'tr' },
+    { name: 'Sozcu', url: rss('https://www.sozcu.com.tr/rss/anasayfa.xml'), lang: 'tr' },
+    { name: 'Cumhuriyet', url: rss('https://www.cumhuriyet.com.tr/rss/son_dakika.xml'), lang: 'tr' },
+    { name: 'Haberturk', url: rss('https://www.haberturk.com/rss'), lang: 'tr' },
     // Polish (PL)
     { name: 'TVN24', url: rss('https://tvn24.pl/swiat.xml'), lang: 'pl' },
     { name: 'Polsat News', url: rss('https://www.polsatnews.pl/rss/wszystkie.xml'), lang: 'pl' },

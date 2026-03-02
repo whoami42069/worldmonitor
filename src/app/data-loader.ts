@@ -79,7 +79,7 @@ import { enrichEventsWithExposure } from '@/services/population-exposure';
 import { debounce, getCircuitBreakerCooldownInfo } from '@/utils';
 import { isFeatureAvailable, isFeatureEnabled } from '@/services/runtime-config';
 import { getAiFlowSettings } from '@/services/ai-flow-settings';
-import { t, getCurrentLanguage } from '@/services/i18n';
+import { t, getCurrentLanguage, getLocale } from '@/services/i18n';
 import { getHydratedData } from '@/services/bootstrap';
 import { canQueueAiClassification, AI_CLASSIFY_MAX_PER_FEED } from '@/services/ai-classify-queue';
 import { classifyWithAI } from '@/services/threat-classifier';
@@ -1113,7 +1113,7 @@ export class DataLoaderManager implements AppModule {
         this.ctx.searchModal.registerSource('techevent', mapEvents.map((e: { id: string; title: string; location: string; startDate: string }) => ({
           id: e.id,
           title: e.title,
-          subtitle: `${e.location} • ${new Date(e.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
+          subtitle: `${e.location} • ${new Date(e.startDate).toLocaleDateString(getLocale(), { month: 'short', day: 'numeric', year: 'numeric' })}`,
           data: e,
         })));
       }

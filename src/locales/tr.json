@@ -67,6 +67,48 @@
       "falling": "Dusuyor",
       "stable": "Sabit"
     },
+    "militaryActivity": "Askeri Faaliyet",
+    "economicIndicators": "Ekonomik Göstergeler",
+    "ownFlights": "Kendi Uçuşları",
+    "foreignFlights": "Yabancı Uçuşlar",
+    "navalVessels": "Deniz Gemileri",
+    "foreignPresence": "Yabancı Varlık",
+    "nearestBases": "En Yakın Askeri Üsler",
+    "noBasesNearby": "600 km içinde yakın üs bulunamadı.",
+    "noInfrastructure": "600 km içinde kritik altyapı bulunamadı.",
+    "noGeometry": "Altyapı korelasyonu için geometri mevcut değil.",
+    "noSignals": "Yakın zamanda yüksek şiddetli sinyal yok.",
+    "assessmentUnavailable": "Değerlendirme mevcut değil.",
+    "noNews": "Yakın zamanda ülkeye özel haber yok.",
+    "noIndicators": "Ülkeye özel gösterge mevcut değil.",
+    "nearbyPorts": "Yakın Limanlar",
+    "detected": "Tespit Edildi",
+    "notDetected": "Hayır",
+    "ciiUnavailable": "Bu ülke için CII puanı mevcut değil.",
+    "chips": {
+      "criticalNews": "Kritik Haberler",
+      "protests": "Protestolar",
+      "militaryAir": "Askeri Hava",
+      "navalVessels": "Deniz Gemileri",
+      "outages": "Kesintiler",
+      "aisDisruptions": "AIS Kesintileri",
+      "satelliteFires": "Uydu Yangınları",
+      "temporalAnomalies": "Zamansal Anomaliler",
+      "cyberThreats": "Siber Tehditler",
+      "earthquakes": "Depremler",
+      "displaced": "Yerinden Edilenler",
+      "climateStress": "İklim Stresi",
+      "conflictEvents": "Çatışma Olayları",
+      "activeStrikes": "Aktif Saldırılar",
+      "doNotTravel": "Seyahat Etmeyin",
+      "reconsiderTravel": "Seyahati Yeniden Düşünün",
+      "exerciseCaution": "Dikkatli Olun",
+      "advisory": "Uyarı",
+      "activeSirens": "Aktif Sirenler",
+      "sirens24h": "Sirenler / 24s",
+      "aviationDisruptions": "Havacılık Kesintileri",
+      "gpsJammingZones": "GPS Karıştırma Bölgeleri"
+    },
     "fallback": {
       "instabilityIndex": "**Istikrarsizlik Endeksi: {{score}}/100** ({{level}}, {{trend}})",
       "protestsDetected": "{{count}} aktif protesto tespit edildi",
@@ -142,7 +184,8 @@
     "panelCatCentralBanks": "Merkez Bankaları & Ekonomi",
     "panelCatDeals": "Anlaşmalar & Kurumsal",
     "panelCatGulfMena": "Körfez & MENA",
-    "panelCatTradePolicy": "Ticaret Politikası"
+    "panelCatTradePolicy": "Ticaret Politikası",
+    "downloadApp": "Uygulamayı İndir"
   },
   "panels": {
     "liveNews": "Canli Haberler",
@@ -1501,6 +1544,10 @@
       "topProducers": "En Büyük Üreticiler",
       "upstreamUnavailable": "Tedarik zinciri verileri geçici olarak kullanılamıyor — önbellek verileri gösteriliyor",
       "warnings": "uyarı(lar)"
+    },
+    "map": {
+      "showMap": "Haritayı Göster",
+      "hideMap": "Haritayı Gizle"
     }
   },
   "popups": {
@@ -2152,6 +2199,8 @@
     "refresh": "Refresh",
     "all": "Tümü",
     "loadingGiving": "Küresel bağış verileri yükleniyor",
-    "rateLimitedMarket": "Piyasa verileri geçici olarak kullanılamıyor (hız sınırlaması) — kısa süre içinde yeniden denenecek"
+    "rateLimitedMarket": "Piyasa verileri geçici olarak kullanılamıyor (hız sınırlaması) — kısa süre içinde yeniden denenecek",
+    "summaryFailed": "Özet oluşturulamadı",
+    "summaryError": "Özet başarısız"
   }
 }

@@ -91,13 +91,20 @@ export async function initI18n(): Promise<void> {
       },
     });
 
-  const detectedLanguage = await ensureLanguageLoaded(i18next.language || 'en');
-  if (detectedLanguage !== 'en') {
-    // Re-trigger translation resolution now that the detected bundle is loaded.
-    await i18next.changeLanguage(detectedLanguage);
+  const storedLang = localStorage.getItem('i18nextLng');
+  if (!storedLang) {
+    // Default to Turkish for new visitors with no stored preference.
+    await ensureLanguageLoaded('tr');
+    await i18next.changeLanguage('tr');
+    applyDocumentDirection('tr');
+  } else {
+    const detectedLanguage = await ensureLanguageLoaded(i18next.language || 'en');
+    if (detectedLanguage !== 'en') {
+      // Re-trigger translation resolution now that the detected bundle is loaded.
+      await i18next.changeLanguage(detectedLanguage);
+    }
+    applyDocumentDirection(i18next.language || detectedLanguage);
   }
-
-  applyDocumentDirection(i18next.language || detectedLanguage);
 }
 
 // Helper to translate

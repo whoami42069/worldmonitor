@@ -234,6 +234,12 @@ const ALLOWED_DOMAINS = [
   'www.lorientlejour.com',
   // Regional locale feeds (tr, pl, ru, th, vi, pt)
   'www.hurriyet.com.tr',
+  'www.aa.com.tr',
+  'www.ntv.com.tr',
+  'www.cnnturk.com',
+  'www.sozcu.com.tr',
+  'www.cumhuriyet.com.tr',
+  'www.haberturk.com',
   'tvn24.pl',
   'www.polsatnews.pl',
   'www.rp.pl',
