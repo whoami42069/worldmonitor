@@ -220,11 +220,38 @@ export function createDomainGateway(
       );
     }
 
-    // If handler returned 500 or empty data, try upstream fallback
+    // If handler returned 500 or empty/thin data, try upstream fallback
     if (response.status >= 500) {
       try {
         const upstreamResp = await proxyToUpstream(request);
         if (upstreamResp.status === 200) response = upstreamResp;
+      } catch { /* keep original response */ }
+    } else if (response.status === 200) {
+      // Check if the response body is "empty" data (e.g. {"events":[]})
+      // If so, try upstream which likely has richer data
+      try {
+        const cloned = response.clone();
+        const text = await cloned.text();
+        const isEmpty = text.length < 100 && (
+          text.includes('"events":[]') ||
+          text.includes('"bases":[]') ||
+          text.includes('"items":[]') ||
+          text.includes('"results":[]') ||
+          text.includes('"data":[]') ||
+          text.includes('"totalInView":0')
+        );
+        if (isEmpty) {
+          const upstreamResp = await proxyToUpstream(request);
+          if (upstreamResp.status === 200) {
+            const upstreamText = await upstreamResp.clone().text();
+            if (upstreamText.length > text.length) {
+              response = new Response(upstreamText, {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' },
+              });
+            }
+          }
+        }
       } catch { /* keep original response */ }
     }
 
