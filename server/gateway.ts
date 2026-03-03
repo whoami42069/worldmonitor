@@ -232,13 +232,17 @@ export function createDomainGateway(
       try {
         const cloned = response.clone();
         const text = await cloned.text();
-        const isEmpty = text.length < 100 && (
+        const isEmpty = text.length < 200 && (
           text.includes('"events":[]') ||
           text.includes('"bases":[]') ||
           text.includes('"items":[]') ||
           text.includes('"results":[]') ||
           text.includes('"data":[]') ||
-          text.includes('"totalInView":0')
+          text.includes('"quotes":[]') ||
+          text.includes('"clusters":[]') ||
+          text.includes('"totalInView":0') ||
+          text.includes('"hexes":[]') ||
+          text.includes('not configured')
         );
         if (isEmpty) {
           const upstreamResp = await proxyToUpstream(request);
