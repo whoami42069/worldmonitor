@@ -148,7 +148,7 @@ export function getProviderCredentials(provider: string): ProviderCredentials | 
       apiUrl: new URL('/v1/chat/completions', baseUrl).toString(),
       model: process.env.OLLAMA_MODEL || 'llama3.1:8b',
       headers,
-      extraBody: { think: false, max_tokens: ollamaMaxTokens },
+      extraBody: { max_tokens: ollamaMaxTokens },
     };
   }
 

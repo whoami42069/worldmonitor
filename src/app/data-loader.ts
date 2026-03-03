@@ -86,7 +86,7 @@ import { classifyWithAI } from '@/services/threat-classifier';
 import { ingestHeadlines } from '@/services/trending-keywords';
 import type { ListFeedDigestResponse } from '@/generated/client/worldmonitor/news/v1/service_client';
 import type { GetSectorSummaryResponse } from '@/generated/client/worldmonitor/market/v1/service_client';
-import { mountCommunityWidget } from '@/components/CommunityWidget';
+// import { mountCommunityWidget } from '@/components/CommunityWidget'; // Removed for Turkish War Edition
 import { ResearchServiceClient } from '@/generated/client/worldmonitor/research/v1/service_client';
 import {
   MarketPanel,
@@ -880,7 +880,11 @@ export class DataLoaderManager implements AppModule {
 
     this.ctx.allNews = collectedNews;
     this.ctx.initialLoadComplete = true;
-    mountCommunityWidget();
+    // mountCommunityWidget(); // Removed for Turkish War Edition
+
+    // ── Middle East War News filter ──
+    this.filterAndRenderMideastWar(collectedNews);
+
     updateAndCheck([
       { type: 'news', region: 'global', count: collectedNews.length },
     ]).then(anomalies => {
@@ -928,6 +932,120 @@ export class DataLoaderManager implements AppModule {
         this.ctx.mapLayers.positiveEvents ? this.loadPositiveEvents() : Promise.resolve(),
         this.ctx.mapLayers.kindness ? Promise.resolve(this.loadKindnessData()) : Promise.resolve(),
       ]);
+    }
+  }
+
+  // ── Middle East War News: keyword filter + Google Translate ──
+
+  private static readonly ME_KEYWORDS = [
+    'turkey', 'turkish', 'ankara', 'erdogan', 'türkiye', 'istanbul',
+    'syria', 'iran', 'iraq', 'israel', 'palestine', 'gaza', 'lebanon', 'yemen',
+    'saudi', 'egypt', 'jordan', 'libya', 'kurdish', 'pkk', 'hamas', 'hezbollah',
+    'houthi', 'idf', 'netanyahu', 'tehran', 'baghdad', 'damascus', 'beirut',
+  ];
+
+  private static readonly WAR_KEYWORDS = [
+    'war', 'conflict', 'airstrike', 'missile', 'military', 'strike',
+    'attack', 'bomb', 'troops', 'defense', 'invasion', 'ceasefire', 'casualties',
+    'killed', 'wounded', 'combat', 'operation', 'offensive', 'drone',
+    'savaş', 'çatışma', 'saldırı', 'füze', 'askeri', 'hava saldırısı',
+  ];
+
+  private translateCache = new Map<string, string>();
+
+  private filterAndRenderMideastWar(news: NewsItem[]): void {
+    const mideastPanel = this.ctx.newsPanels['mideast-war'];
+    if (!mideastPanel) return;
+
+    const meSet = new Set(DataLoaderManager.ME_KEYWORDS);
+    const warSet = new Set(DataLoaderManager.WAR_KEYWORDS);
+
+    const matched = news.filter(item => {
+      const lower = item.title.toLowerCase();
+      const words = lower.split(/[\s,.\-:;'"!?()]+/);
+      const hasME = words.some(w => meSet.has(w)) || DataLoaderManager.ME_KEYWORDS.some(kw => lower.includes(kw));
+      const hasWar = words.some(w => warSet.has(w)) || DataLoaderManager.WAR_KEYWORDS.some(kw => lower.includes(kw));
+
+      // Match: ME keyword AND war keyword, OR threat high/critical with ME mention
+      if (hasME && hasWar) return true;
+      if (hasME && item.threat && (item.threat.level === 'high' || item.threat.level === 'critical')) return true;
+      return false;
+    });
+
+    if (matched.length === 0) {
+      mideastPanel.setContent('<div class="insights-empty">Orta Doğu savaş haberi bulunamadı</div>');
+      return;
+    }
+
+    // Sort by date (newest first)
+    matched.sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());
+
+    // Render with links immediately, then translate in background
+    mideastPanel.renderNews(matched);
+
+    // Batch translate headlines to Turkish
+    void this.translateMideastHeadlines(matched);
+  }
+
+  private async translateMideastHeadlines(items: NewsItem[]): Promise<void> {
+    const mideastPanel = this.ctx.newsPanels['mideast-war'];
+    if (!mideastPanel) return;
+
+    const BATCH_SIZE = 5;
+    const BATCH_DELAY = 200;
+    let translated = false;
+
+    for (let i = 0; i < items.length; i += BATCH_SIZE) {
+      const batch = items.slice(i, i + BATCH_SIZE);
+      const toTranslate = batch.filter(item => {
+        // Skip if already cached or already Turkish
+        if (this.translateCache.has(item.title)) return false;
+        // Simple heuristic: if title has Turkish chars, skip
+        if (/[ğüşıöçĞÜŞİÖÇ]/.test(item.title)) {
+          this.translateCache.set(item.title, item.title);
+          return false;
+        }
+        return true;
+      });
+
+      if (toTranslate.length > 0) {
+        await Promise.allSettled(toTranslate.map(async (item) => {
+          try {
+            const encoded = encodeURIComponent(item.title);
+            const resp = await fetch(
+              `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=tr&dt=t&q=${encoded}`,
+              { signal: AbortSignal.timeout(5000) },
+            );
+            if (!resp.ok) return;
+            const data = await resp.json();
+            const result = data?.[0]?.map((s: [string]) => s[0]).join('') || item.title;
+            this.translateCache.set(item.title, result);
+            translated = true;
+          } catch {
+            // Translation failed, keep original
+            this.translateCache.set(item.title, item.title);
+          }
+        }));
+
+        // Small delay between batches to avoid rate limiting
+        if (i + BATCH_SIZE < items.length) {
+          await new Promise(r => setTimeout(r, BATCH_DELAY));
+        }
+      }
+    }
+
+    // Re-render with translated titles if any translations happened
+    if (translated && mideastPanel) {
+      const el = mideastPanel.getElement().querySelector('.panel-content');
+      if (!el) return;
+      el.querySelectorAll('.item-title').forEach((titleEl) => {
+        const original = titleEl.textContent?.trim() || '';
+        const tr = this.translateCache.get(original);
+        if (tr && tr !== original) {
+          titleEl.setAttribute('title', original); // Tooltip shows original
+          titleEl.textContent = tr;
+        }
+      });
     }
   }
 

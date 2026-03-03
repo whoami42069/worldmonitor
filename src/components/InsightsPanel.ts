@@ -438,6 +438,19 @@ export class InsightsPanel extends Panel {
       </div>
       ${missedHtml}
     `);
+
+    // Wire up click-to-expand on stories
+    const contentEl = this.getElement().querySelector('.panel-content');
+    contentEl?.addEventListener('click', (e) => {
+      const story = (e.target as HTMLElement).closest('[data-expandable]');
+      if (!story) return;
+      // Don't toggle if clicking a link
+      if ((e.target as HTMLElement).closest('a')) return;
+      const drillDown = story.querySelector('.insight-drill-down, .focal-drill-down') as HTMLElement;
+      if (drillDown) {
+        drillDown.style.display = drillDown.style.display === 'none' ? 'block' : 'none';
+      }
+    });
   }
 
   private renderWorldBrief(brief: string): string {
@@ -447,6 +460,14 @@ export class InsightsPanel extends Panel {
         <div class="insights-brief-text">${escapeHtml(brief)}</div>
       </div>
     `;
+  }
+
+  private formatTimeSince(date: Date): string {
+    const mins = Math.floor((Date.now() - date.getTime()) / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
   }
 
   private renderBreakingStories(
@@ -475,13 +496,28 @@ export class InsightsPanel extends Panel {
         badges.push('<span class="insight-badge alert">⚠ ALERT</span>');
       }
 
+      // Build expandable source details
+      const sources = cluster.topSources ?? cluster.allItems?.slice(0, 5) ?? [];
+      const sourceLinks = sources.map((s: { name?: string; source?: string; url?: string; link?: string }) => {
+        const name = escapeHtml(s.name || s.source || 'Source');
+        const url = sanitizeUrl(s.url || s.link || '');
+        return url ? `<a href="${url}" target="_blank" rel="noopener" class="drill-source-link">${name}</a>` : `<span class="drill-source-name">${name}</span>`;
+      }).join('');
+
+      const timeSince = cluster.firstSeen ? this.formatTimeSince(cluster.firstSeen) : '';
+      const primaryUrl = sanitizeUrl(cluster.primaryLink || '');
+
       return `
-        <div class="insight-story">
+        <div class="insight-story" data-expandable>
           <div class="insight-story-header">
             <span class="insight-sentiment-dot ${sentimentClass}"></span>
-            <span class="insight-story-title">${escapeHtml(cluster.primaryTitle.slice(0, 100))}${cluster.primaryTitle.length > 100 ? '...' : ''}</span>
+            <span class="insight-story-title">${primaryUrl ? `<a href="${primaryUrl}" target="_blank" rel="noopener" class="insight-title-link">${escapeHtml(cluster.primaryTitle.slice(0, 100))}${cluster.primaryTitle.length > 100 ? '...' : ''}</a>` : `${escapeHtml(cluster.primaryTitle.slice(0, 100))}${cluster.primaryTitle.length > 100 ? '...' : ''}`}</span>
           </div>
           ${badges.length > 0 ? `<div class="insight-badges">${badges.join('')}</div>` : ''}
+          <div class="insight-drill-down" style="display:none">
+            ${timeSince ? `<div class="drill-time">First seen: ${timeSince}</div>` : ''}
+            ${sourceLinks ? `<div class="drill-sources"><span class="drill-label">Sources:</span> ${sourceLinks}</div>` : ''}
+          </div>
         </div>
       `;
     }).join('');
@@ -643,12 +679,25 @@ export class InsightsPanel extends Panel {
     const focalPointsHtml = correlatedFPs.map(fp => {
       const urgencyClass = fp.urgency;
       const icons = fp.signalTypes.map(t => signalIcons[t] || '').join(' ');
-      const topHeadline = fp.topHeadlines[0];
-      const headlineText = topHeadline?.title?.slice(0, 60) || '';
-      const headlineUrl = sanitizeUrl(topHeadline?.url || '');
+
+      // All headlines with links
+      const headlinesHtml = fp.topHeadlines.slice(0, 5).map(h => {
+        const title = escapeHtml((h.title || '').slice(0, 80));
+        const url = sanitizeUrl(h.url || '');
+        return url
+          ? `<a href="${url}" target="_blank" rel="noopener" class="focal-headline-link">${title}</a>`
+          : `<span class="focal-headline-text">${title}</span>`;
+      }).join('');
+
+      // Signal type labels
+      const signalLabels = fp.signalTypes.map(st => {
+        const icon = signalIcons[st] || '📍';
+        const label = st.replace(/_/g, ' ');
+        return `<span class="focal-signal-label">${icon} ${label}</span>`;
+      }).join('');
 
       return `
-        <div class="focal-point ${urgencyClass}">
+        <div class="focal-point ${urgencyClass}" data-expandable>
           <div class="focal-point-header">
             <span class="focal-point-name">${escapeHtml(fp.displayName)}</span>
             <span class="focal-point-urgency ${urgencyClass}">${fp.urgency.toUpperCase()}</span>
@@ -657,7 +706,10 @@ export class InsightsPanel extends Panel {
           <div class="focal-point-stats">
             ${fp.newsMentions} news • ${fp.signalCount} signals
           </div>
-          ${headlineText && headlineUrl ? `<a href="${headlineUrl}" target="_blank" rel="noopener" class="focal-point-headline">"${escapeHtml(headlineText)}..."</a>` : ''}
+          <div class="focal-drill-down" style="display:none">
+            ${signalLabels ? `<div class="focal-signal-types">${signalLabels}</div>` : ''}
+            ${headlinesHtml ? `<div class="focal-headlines">${headlinesHtml}</div>` : ''}
+          </div>
         </div>
       `;
     }).join('');

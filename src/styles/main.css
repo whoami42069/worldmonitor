@@ -304,6 +304,9 @@ canvas,
   letter-spacing: 1px;
   transition: all 0.25s ease;
   cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
 }
 
 .variant-option .variant-icon {
@@ -321,7 +324,7 @@ canvas,
 
 .variant-option:hover .variant-label,
 .variant-option.active .variant-label {
-  max-width: 50px;
+  max-width: 80px;
   opacity: 1;
 }
 
@@ -336,7 +339,6 @@ canvas,
 .variant-option.active {
   color: var(--green);
   background: rgba(68, 255, 136, 0.1);
-  pointer-events: none;
 }
 
 
@@ -361,7 +363,7 @@ canvas,
 }
 
 .variant-switcher:hover .variant-option .variant-label {
-  max-width: 50px;
+  max-width: 80px;
   opacity: 1;
 }
 
@@ -666,18 +668,6 @@ canvas,
   color: var(--accent);
 }
 
-.github-link {
-  color: var(--text-dim);
-  margin-left: 8px;
-  display: flex;
-  align-items: center;
-  transition: color 0.2s;
-}
-
-.github-link:hover {
-  color: var(--text);
-}
-
 .search-btn {
   padding: 4px 10px;
   background: transparent;
@@ -924,9 +914,7 @@ canvas,
 }
 
 .map-section.pinned {
-  position: sticky;
   top: 0;
-  z-index: 100;
 }
 
 .map-pin-btn {
@@ -977,6 +965,11 @@ canvas,
   z-index: 1;
   /* This ensures panels scroll UNDER the pinned map (z-index: 100) */
 }
+
+/* Panel font size (controlled by Settings) */
+.panels-grid[data-font="sm"] .panel-content { font-size: 0.75rem; }
+.panels-grid[data-font="md"] .panel-content { font-size: 0.875rem; }
+.panels-grid[data-font="lg"] .panel-content { font-size: 1.125rem; }
 
 .panel {
   background: var(--surface);
@@ -16410,3 +16403,53 @@ body.has-breaking-alert .panels-grid {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Drill-down expandable details */
+.insight-drill-down, .focal-drill-down {
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.03);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+  font-size: 0.8rem;
+}
+.drill-time { color: var(--text-dim); margin-bottom: 4px; }
+.drill-sources { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.drill-label { color: var(--text-dim); font-size: 0.75rem; margin-right: 4px; }
+.drill-source-link {
+  color: var(--accent);
+  text-decoration: none;
+  padding: 1px 6px;
+  background: rgba(68,136,255,0.1);
+  border-radius: 3px;
+  font-size: 0.75rem;
+  transition: background 0.2s;
+}
+.drill-source-link:hover { background: rgba(68,136,255,0.2); text-decoration: underline; }
+.drill-source-name { color: var(--text-dim); font-size: 0.75rem; }
+.insight-title-link { color: inherit; text-decoration: none; }
+.insight-title-link:hover { text-decoration: underline; color: var(--accent); }
+[data-expandable] { cursor: pointer; }
+[data-expandable] a { cursor: pointer; }
+.focal-signal-types { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+.focal-signal-label {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  color: var(--text-dim);
+  text-transform: capitalize;
+}
+.focal-headline-link {
+  display: block;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.75rem;
+  padding: 2px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.focal-headline-link:hover { text-decoration: underline; }
+.focal-headline-text { display: block; color: var(--text-dim); font-size: 0.75rem; padding: 2px 0; }
+.focal-headlines { max-height: 150px; overflow-y: auto; }
