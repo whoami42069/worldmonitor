@@ -751,9 +751,62 @@ export class PanelLayoutManager implements AppModule {
     const savedFont = localStorage.getItem('wm-panel-font') || 'md';
     panelsGrid.setAttribute('data-font', savedFont);
 
-    // Set mideast-war panel to appear first in the grid
+    // Set mideast-war panel to appear first in the grid, spanning 2 columns
     const mideastEl = this.ctx.panels['mideast-war']?.getElement();
-    if (mideastEl) mideastEl.style.order = '-1';
+    if (mideastEl) {
+      mideastEl.style.order = '-2';
+      mideastEl.classList.add('panel-wide');
+    }
+
+    // Insert ad unit BEFORE the mideast panel (top ad)
+    const adTop = document.createElement('div');
+    adTop.className = 'ad-panel';
+    adTop.style.order = '-3';
+    adTop.innerHTML = `
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-6409254364702815"
+           data-ad-slot="auto"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    `;
+    panelsGrid.insertBefore(adTop, panelsGrid.firstChild);
+
+    // Insert ad unit AFTER the mideast panel (side/below ad)
+    const adSide = document.createElement('div');
+    adSide.className = 'ad-panel';
+    adSide.style.order = '-1';
+    adSide.innerHTML = `
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-6409254364702815"
+           data-ad-slot="auto"
+           data-ad-format="vertical"
+           data-full-width-responsive="true"></ins>
+    `;
+    panelsGrid.appendChild(adSide);
+
+    // Insert another ad unit further down in the grid
+    const adMid = document.createElement('div');
+    adMid.className = 'ad-panel';
+    adMid.style.order = '5';
+    adMid.innerHTML = `
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-6409254364702815"
+           data-ad-slot="auto"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+    `;
+    panelsGrid.appendChild(adMid);
+
+    // Push ads to Google AdSense
+    try {
+      const adsbygoogle = (window as unknown as { adsbygoogle: unknown[] }).adsbygoogle || [];
+      adsbygoogle.push({});
+      adsbygoogle.push({});
+      adsbygoogle.push({});
+    } catch { /* AdSense not loaded yet — auto-ads will handle */ }
 
     // Key war panels get order 0
     for (const k of ['insights', 'strategic-risk', 'cii', 'strategic-posture']) {

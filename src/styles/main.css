@@ -971,6 +971,30 @@ canvas,
 .panels-grid[data-font="md"] .panel-content { font-size: 0.875rem; }
 .panels-grid[data-font="lg"] .panel-content { font-size: 1.125rem; }
 
+/* Wide panel (mideast-war spans 2 columns) */
+.panel-wide {
+  grid-column: span 2;
+}
+@media (max-width: 768px) {
+  .panel-wide {
+    grid-column: span 1;
+  }
+}
+
+/* Google AdSense ad panels */
+.ad-panel {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.ad-panel ins {
+  width: 100%;
+}
+
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);
