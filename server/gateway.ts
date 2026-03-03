@@ -20,6 +20,28 @@ import type { ServerOptions } from '../src/generated/server/worldmonitor/seismol
 
 export const serverOptions: ServerOptions = { onError: mapErrorToResponse };
 
+// --- Upstream proxy fallback ---
+// When our handler fails (missing API keys, relay down, etc.), proxy the
+// request to the original worldmonitor.app which has all data sources.
+const UPSTREAM_ORIGIN = 'https://worldmonitor.app';
+const UPSTREAM_UA = 'Mozilla/5.0 (compatible; WorldMonitor-Proxy/1.0)';
+
+async function proxyToUpstream(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  const upstreamUrl = `${UPSTREAM_ORIGIN}${url.pathname}${url.search}`;
+  const resp = await fetch(upstreamUrl, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json',
+      'User-Agent': UPSTREAM_UA,
+      'Origin': UPSTREAM_ORIGIN,
+      'Referer': `${UPSTREAM_ORIGIN}/`,
+    },
+    signal: AbortSignal.timeout(15000),
+  });
+  return resp;
+}
+
 // --- Edge cache tier definitions ---
 // NOTE: This map is shared across all domain bundles (~3KB). Kept centralised for
 // single-source-of-truth maintainability; the size is negligible vs handler code.
@@ -184,16 +206,26 @@ export function createDomainGateway(
       });
     }
 
-    // Execute handler with top-level error boundary
+    // Execute handler with top-level error boundary + upstream fallback
     let response: Response;
     try {
       response = await matchedHandler(request);
     } catch (err) {
-      console.error('[gateway] Unhandled handler error:', err);
-      response = new Response(JSON.stringify({ message: 'Internal server error' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      console.error('[gateway] Handler error, falling back to upstream:', err);
+      response = await proxyToUpstream(request).catch(() =>
+        new Response(JSON.stringify({ message: 'Internal server error' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+    }
+
+    // If handler returned 500 or empty data, try upstream fallback
+    if (response.status >= 500) {
+      try {
+        const upstreamResp = await proxyToUpstream(request);
+        if (upstreamResp.status === 200) response = upstreamResp;
+      } catch { /* keep original response */ }
     }
 
     // Merge CORS + handler side-channel headers into response
